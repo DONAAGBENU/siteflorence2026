@@ -6,12 +6,13 @@ import {
   ShoppingBag, Heart, Sparkles, Flame, Star, CheckCircle, 
   ChevronRight, Instagram, Facebook, Moon, Sun, 
   Package, Gem, Award, Clock, Users, Leaf,
-  Play, Pause, Volume2, Gift, ShieldCheck, Globe
+  Play, Pause, Volume2, Gift, ShieldCheck, Globe,
+  Mail, X, ExternalLink
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/Button';
 
-// ============ PARTICLE BACKGROUND (du 1er code) ============
+// ============ PARTICLE BACKGROUND ============
 const ParticleBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -78,7 +79,7 @@ const ParticleBackground = () => {
   );
 };
 
-// ============ PRODUCT CARD 3D (du 1er code - COMPLET) ============
+// ============ PRODUCT CARD 3D ============
 const ProductCard3D = ({ product, onAddToCart }: any) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -106,9 +107,9 @@ const ProductCard3D = ({ product, onAddToCart }: any) => {
             
             {/* BADGE FLOTTANT */}
             <div className="absolute top-4 left-4">
-              <div className="bg-gradient-to-r from-amber-500/90 to-amber-600/90 text-gray-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 backdrop-blur-sm">
-                <Gem className="h-3 w-3" />
-                Premium
+              <div className="bg-gradient-to-r from-emerald-500/90 to-green-600/90 text-gray-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 backdrop-blur-sm">
+                <Leaf className="h-3 w-3" />
+                100% Bio
               </div>
             </div>
           </div>
@@ -137,26 +138,27 @@ const ProductCard3D = ({ product, onAddToCart }: any) => {
               <span className="text-sm font-bold text-gray-700">{product.rating}</span>
             </div>
 
-            {/* PRIX */}
+            {/* PRIX EN FCFA */}
             <div className="mb-6">
-              <span className="text-3xl font-bold bg-gradient-to-r from-rose-700 to-pink-700 bg-clip-text text-transparent">
+              <span className="text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-700 bg-clip-text text-transparent">
                 {product.price}
               </span>
               {product.originalPrice && (
                 <span className="text-sm text-gray-500 line-through ml-2">{product.originalPrice}</span>
               )}
+              <div className="text-xs text-gray-500 mt-1">Prix en FCFA</div>
             </div>
 
             {/* BOUTON 3D */}
             <button 
               onClick={(e) => { e.stopPropagation(); onAddToCart(); }}
-              className="relative w-full bg-gradient-to-r from-rose-700 to-pink-700 text-white py-3 rounded-xl font-bold overflow-hidden group hover:shadow-lg transition-shadow"
+              className="relative w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white py-3 rounded-xl font-bold overflow-hidden group hover:shadow-lg transition-shadow"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <ShoppingBag className="h-5 w-5" />
                 Ajouter au panier
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-800 to-rose-800 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-emerald-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </button>
 
             {/* INDICATEUR FLIP */}
@@ -167,7 +169,7 @@ const ProductCard3D = ({ product, onAddToCart }: any) => {
         </div>
 
         {/* FACE ARRIÈRE - DÉTAILS */}
-        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-gray-800 via-purple-800 to-pink-800 rounded-3xl shadow-2xl p-6 text-gray-100">
+        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-gray-800 via-emerald-800 to-green-800 rounded-3xl shadow-2xl p-6 text-gray-100">
           <h4 className="text-xl font-bold mb-4 text-white">Détails du produit</h4>
           
           <div className="space-y-4 mb-6">
@@ -182,15 +184,15 @@ const ProductCard3D = ({ product, onAddToCart }: any) => {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-blue-300" />
-              <span className="text-sm">Certifié bio</span>
+              <span className="text-sm">Certifié bio & éthique</span>
             </div>
             <div className="flex items-center gap-2">
               <Leaf className="h-4 w-4 text-emerald-300" />
-              <span className="text-sm">100% naturel</span>
+              <span className="text-sm">Ingrédients 100% naturels</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-amber-300" />
-              <span className="text-sm">Effet 30-60 min</span>
+              <span className="text-sm">Production locale</span>
             </div>
           </div>
 
@@ -206,7 +208,7 @@ const ProductCard3D = ({ product, onAddToCart }: any) => {
   );
 };
 
-// ============ PROGRESS BAR (du 1er code) ============
+// ============ PROGRESS BAR ============
 const ProgressBar = ({ value, max = 100, label }: any) => {
   const percentage = (value / max) * 100;
   
@@ -218,9 +220,44 @@ const ProgressBar = ({ value, max = 100, label }: any) => {
       </div>
       <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
         <div 
-          className="h-full bg-gradient-to-r from-rose-600 to-pink-600 rounded-full transition-all duration-1000"
+          className="h-full bg-gradient-to-r from-emerald-600 to-green-600 rounded-full transition-all duration-1000"
           style={{ width: `${percentage}%` }}
         ></div>
+      </div>
+    </div>
+  );
+};
+
+// ============ COMPONENT NOTIFICATION ============
+const Notification = ({ message, type = 'success', onClose }: { message: string, type?: string, onClose: () => void }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`fixed top-24 right-6 z-50 animate-fade-in ${
+      type === 'success' 
+        ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
+        : 'bg-gradient-to-r from-rose-500 to-pink-500'
+    } text-white px-6 py-4 rounded-xl shadow-2xl backdrop-blur-sm border border-white/20 max-w-md`}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          {type === 'success' ? (
+            <CheckCircle className="h-6 w-6" />
+          ) : (
+            <X className="h-6 w-6" />
+          )}
+          <div>
+            <p className="font-bold">{type === 'success' ? 'Succès !' : 'Erreur'}</p>
+            <p className="text-sm opacity-90">{message}</p>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-white/80 hover:text-white">
+          <X className="h-5 w-5" />
+        </button>
       </div>
     </div>
   );
@@ -233,6 +270,17 @@ export default function Home() {
   const [audioPlaying, setAudioPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState('success');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // État pour les liens sociaux (vous pouvez les remplacer par vos propres liens)
+  const [socialLinks, setSocialLinks] = useState({
+    instagram: '#', // Remplacez par votre lien Instagram
+    facebook: '#'   // Remplacez par votre lien Facebook
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -244,46 +292,60 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // PRODUITS (du 1er code)
-  const localProducts = [
-    {
-      id: 1, name: 'Élixir Éternité', 
-      description: 'Synergie parfaite de 12 plantes rares pour une passion durable',
-      price: '79.99€', originalPrice: '99.99€',
-      image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80',
-      rating: 4.9, category: 'premium',
-      ingredients: ['Safran Iranien', 'Maca Noire', 'Tribulus Terrestris', 'Ashwagandha', 'Ginseng Rouge']
-    },
-    {
-      id: 2, name: 'Nectar Divin',
-      description: 'Élixir d\'ambroisie aux notes de vanille de Madagascar',
-      price: '64.99€',
-      image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=800&q=80',
-      rating: 4.8, category: 'signature',
-      ingredients: ['Vanille Bourbon', 'Fleur d\'Oranger', 'Cardamome Verte', 'Miel de Manuka']
-    },
-    {
-      id: 3, name: 'Chocolat Extase',
-      description: 'Chocolat noir 90% infusé aux super-aliments aphrodisiaques',
-      price: '49.99€', originalPrice: '59.99€',
-      image: 'https://images.unsplash.com/photo-1570913199992-91d07c140e7a?auto=format&fit=crop&w=800&q=80',
-      rating: 4.7, category: 'gourmet',
-      ingredients: ['Cacao Pur', 'Guarana', 'Maca', 'Spiruline', 'Fruits Rouges Lyophilisés']
-    },
-    {
-      id: 4, name: 'Huile Sacrée',
-      description: 'Huile de massage aux phéromones et cristaux énergétiques',
-      price: '89.99€',
-      image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=800&q=80',
-      rating: 5.0, category: 'luxe',
-      ingredients: ['Huile d\'Argan', 'Rose de Damas', 'Ylang-Ylang', 'Cristal Chargé']
-    }
-  ];
+  // PRODUITS BIO AVEC IMAGES UNSPLASH
+ // ============ PRODUITS BIO ============
+const localProducts = [
+  
+  {
+    id: 2, 
+    name: 'Miel Bio Pur',
+    description: 'Miel 100% naturel récolté dans les montagnes africaines',
+    price: '32 499 FCFA',
+    image: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=800&q=80',
+    rating: 4.8, 
+    category: 'signature',
+    ingredients: ['Miel Brut', 'Propolis', 'Gelée Royale', 'Pollen Frais']
+  },
+  
+  {
+    id: 4, 
+    name: 'Huile de Baobab',
+    description: 'Huile végétale précieuse aux propriétés régénérantes exceptionnelles',
+    price: '54 999 FCFA',
+    image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&q=80',
+    rating: 5.0, 
+    category: 'luxe',
+    ingredients: ['Huile de Baobab', 'Vitamine E', 'Oméga 6', 'Antioxydants Naturels']
+  },
+  {
+    id: 5, 
+    name: 'Café Bio Éthiopie',
+    description: 'Café arabica bio torréfié lentement pour un arôme intense',
+    price: '18 999 FCFA', 
+    originalPrice: '22 499 FCFA',
+    image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80',
+    rating: 4.6, 
+    category: 'gourmet',
+    ingredients: ['Café Arabica Bio', 'Torréfaction lente', '100% pur', 'Origine Éthiopie']
+  },
+  {
+    id: 6, 
+    name: 'Fruits Secs Bio',
+    description: 'Mélange premium de fruits secs et noix biologiques',
+    price: '21 499 FCFA',
+    image: 'https://images.unsplash.com/photo-1540914124281-342587941389?auto=format&fit=crop&w=800&q=80',
+    rating: 4.8, 
+    category: 'signature',
+    ingredients: ['Amandes Bio', 'Noix de Cajou', 'Raisins Secs', 'Cranberries']
+  },
+  
+  
+];
 
-  // STATS (du 1er code)
+  // STATS
   const stats = [
-    { icon: <Users />, value: '25K+', label: 'Couples Satisfaits', color: 'from-blue-600 to-cyan-600' },
-    { icon: <Award />, value: '68.7%', label: 'Efficacité', color: 'from-emerald-600 to-green-600' },
+    { icon: <Users />, value: '25K+', label: 'Clients Satisfaits', color: 'from-blue-600 to-cyan-600' },
+    { icon: <Award />, value: '98.7%', label: 'Produits Bio', color: 'from-emerald-600 to-green-600' },
     { icon: <Globe />, value: '50+', label: 'Pays Desservis', color: 'from-violet-600 to-purple-600' },
     { icon: <Clock />, value: '24h', label: 'Support 24/7', color: 'from-amber-600 to-orange-600' },
   ];
@@ -301,17 +363,84 @@ export default function Home() {
 
   const handleAddToCart = (product: any) => {
     addToCart(product);
+    showNotificationMessage('Produit ajouté au panier avec succès !', 'success');
+  };
+
+  const showNotificationMessage = (message: string, type: string = 'success') => {
+    setNotificationMessage(message);
+    setNotificationType(type);
+    setShowNotification(true);
+  };
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !email.includes('@')) {
+      showNotificationMessage('Veuillez entrer une adresse email valide', 'error');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Simulation d'envoi d'email - À REMPLACER PAR VOTRE BACKEND
+      console.log('Email envoyé au client:', email);
+      console.log('Notification envoyée à admin@fleursucree.com');
+      
+      // Envoyer l'email au client (simulation)
+      const clientEmailData = {
+        to: email,
+        subject: 'Bienvenue chez Fleur Sucrée !',
+        message: 'Merci de votre inscription à notre newsletter. Vous recevrez nos offres exclusives en avant-première.'
+      };
+
+      // Envoyer la notification à l'admin (simulation)
+      const adminEmailData = {
+        to: 'admin@fleursucree.com',
+        subject: 'Nouvelle inscription newsletter',
+        message: `Nouvel inscrit: ${email}\nDate: ${new Date().toLocaleString()}`
+      };
+
+      // Simulation de délai d'envoi
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Afficher la notification de succès
+      showNotificationMessage(
+        'Merci pour votre inscription ! Vous recevrez une confirmation par email.',
+        'success'
+      );
+
+      // Réinitialiser le formulaire
+      setEmail('');
+
+    } catch (error) {
+      showNotificationMessage(
+        'Une erreur est survenue. Veuillez réessayer.',
+        'error'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-gray-100 via-rose-50/50 to-amber-50/50'}`}>
+    <div className={`min-h-screen transition-colors duration-500 ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-gray-100 via-emerald-50/50 to-amber-50/50'}`}>
       {/* ============ BARRE DE PROGRESSION FLOTTANTE ============ */}
       <div className="fixed top-0 left-0 right-0 h-1 z-50">
         <div 
-          className="h-full bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600 transition-all duration-300"
+          className="h-full bg-gradient-to-r from-emerald-600 via-green-600 to-amber-600 transition-all duration-300"
           style={{ width: `${scrollProgress}%` }}
         ></div>
       </div>
+
+      {/* ============ NOTIFICATION ============ */}
+      {showNotification && (
+        <Notification 
+          message={notificationMessage} 
+          type={notificationType}
+          onClose={() => setShowNotification(false)}
+        />
+      )}
 
       {/* ============ AUDIO AMBIANT ============ */}
       <audio ref={audioRef} loop>
@@ -325,14 +454,14 @@ export default function Home() {
             {/* LOGO ANIMÉ AVEC EFFET FLOTTANT */}
             <div className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-pink-600 rounded-full blur-lg opacity-70 group-hover:opacity-100 transition-opacity"></div>
-                <Heart className="relative h-10 w-10 text-white animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-600 rounded-full blur-lg opacity-70 group-hover:opacity-100 transition-opacity"></div>
+                <Leaf className="relative h-10 w-10 text-white animate-pulse" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-green-400 to-amber-400 bg-clip-text text-transparent">
                   Fleur Sucrée
                 </h1>
-                <p className="text-xs text-gray-400">L&apos;excellence sensorielle</p>
+                <p className="text-xs text-gray-400">Produits Bio d&apos;Excellence</p>
               </div>
             </div>
 
@@ -344,8 +473,8 @@ export default function Home() {
                 className="p-2 rounded-full bg-gray-800/50 hover:bg-gray-700/50 backdrop-blur-sm transition-colors animate-float-slow"
               >
                 {audioPlaying ? 
-                  <Volume2 className="h-5 w-5 text-rose-400" /> : 
-                  <Play className="h-5 w-5 text-rose-400" />
+                  <Volume2 className="h-5 w-5 text-emerald-400" /> : 
+                  <Play className="h-5 w-5 text-emerald-400" />
                 }
               </button>
 
@@ -366,12 +495,12 @@ export default function Home() {
                 className="relative group animate-float"
               >
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-pink-600 rounded-full blur-md opacity-0 group-hover:opacity-70 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-r from-rose-600 to-pink-600 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-600 rounded-full blur-md opacity-0 group-hover:opacity-70 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-r from-emerald-600 to-green-600 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
                     <ShoppingBag className="h-5 w-5" />
                     <span>Panier</span>
                     {totalItems > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-white text-rose-700 text-sm font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
+                      <span className="absolute -top-2 -right-2 bg-white text-emerald-700 text-sm font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
                         {totalItems}
                       </span>
                     )}
@@ -385,17 +514,17 @@ export default function Home() {
 
       {/* ============ HERO SECTION ULTRA PREMIUM ============ */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* BACKGROUND AVEC IMAGE COSMÉTIQUE */}
+        {/* BACKGROUND AVEC IMAGE PRODUITS BIO */}
         <div className="absolute inset-0 z-0">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: 'url("https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1920&q=80")',
+              backgroundImage: 'url("https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1920&q=80")',
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900/85 via-purple-900/80 to-rose-900/85 backdrop-blur-[2px]"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-900/85 via-emerald-900/80 to-green-900/85 backdrop-blur-[2px]"></div>
           </div>
         </div>
         
@@ -404,7 +533,7 @@ export default function Home() {
         
         {/* EFFETS VISUELS FLOTTANTS */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-rose-600/15 to-pink-600/15 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-emerald-600/15 to-green-600/15 rounded-full blur-3xl animate-pulse-slow"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-amber-600/15 to-orange-600/15 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
         </div>
 
@@ -412,39 +541,46 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               {/* BADGE ANIMÉ FLOTTANT */}
-              <div className="inline-flex items-center gap-2 bg-gray-800/70 backdrop-blur-md px-4 py-2 rounded-full mb-8 border border-rose-500/30 animate-float">
+              <div className="inline-flex items-center gap-2 bg-gray-800/70 backdrop-blur-md px-4 py-2 rounded-full mb-8 border border-emerald-500/30 animate-float">
                 <Sparkles className="h-4 w-4 text-amber-400 animate-spin-slow" />
-                <span className="text-sm font-bold text-white">Collection Limitée 2025</span>
+                <span className="text-sm font-bold text-white">Collection Bio 2025</span>
               </div>
 
               {/* TITRE PRINCIPAL AVEC DÉGRADÉ ANIMÉ */}
               <h1 className="text-6xl lg:text-7xl font-bold mb-8">
                 <span className="block text-white">BIENVENUE </span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 animate-gradient">
-                dans l'univers du plaisir. 
-                 </span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-green-400 to-amber-400 animate-gradient">
+                  dans l&apos;univers du naturel
+                </span>
               </h1>
 
               <p className="text-xl text-gray-200 mb-10 leading-relaxed max-w-2xl">
-                Découvrez une expérience sensorielle inégalée où chaque produit est une œuvre d&apos;art, 
-                chaque ingrédient est soigneusement sélectionné, et chaque détail est pensé 
-                pour apporter une touche particuliere a votre vie sensuelle.
+                Découvrez une expérience sensorielle inégalée où chaque produit est une œuvre d&apos;art biologique, 
+                chaque ingrédient est soigneusement sélectionné dans le respect de la nature, et chaque détail est pensé 
+                pour apporter une touche particulière à votre bien-être.
               </p>
 
               {/* CTA PREMIUM AVEC EFFETS FLOTTANTS */}
               <div className="flex flex-col sm:flex-row gap-6">
                 <Link href="/auth/login">
-                  <button className="group relative bg-gradient-to-r from-rose-600 to-pink-600 text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 overflow-hidden animate-float-slow">
+                  <button className="group relative bg-gradient-to-r from-emerald-600 to-green-600 text-white px-10 py-5 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-105 overflow-hidden animate-float-slow">
                     <span className="relative z-10 flex items-center justify-center gap-3">
-                      <Flame className="h-6 w-6 animate-pulse" />
+                      <Leaf className="h-6 w-6 animate-pulse" />
                       Commencer l&apos;Expérience
                       <ChevronRight className="h-15 w-5 group-hover:translate-x-2 transition-transform" />
                     </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-700 to-rose-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </button>
                 </Link>
                 
-                
+                <Link href="/products">
+                  <button className="group relative bg-transparent border-2 border-emerald-500 text-emerald-400 hover:text-white px-10 py-5 rounded-2xl font-bold text-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 overflow-hidden">
+                    <span className="relative z-10 flex items-center justify-center gap-3">
+                      Voir la Collection
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-green-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  </button>
+                </Link>
               </div>
 
               {/* STATS AVEC ICÔNES FLOTTANTES */}
@@ -465,12 +601,12 @@ export default function Home() {
             <div className="relative">
               <div className="relative h-[600px]">
                 {/* EFFET 3D FLOTTANT */}
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-600/20 via-pink-600/20 to-amber-600/20 rounded-3xl backdrop-blur-sm border border-white/10"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-green-600/20 to-amber-600/20 rounded-3xl backdrop-blur-sm border border-white/10"></div>
                 
-                {/* IMAGE PRINCIPALE AVEC EFFET FLOTTANT - PRODUIT COSMÉTIQUE */}
+                {/* IMAGE PRINCIPALE AVEC EFFET FLOTTANT - PRODUITS BIO */}
                 <img
-                  src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1200&q=80"
-                  alt="Collection Fleur Sucrée Cosmétique"
+                  src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80"
+                  alt="Collection Fleur Sucrée Bio"
                   className="absolute inset-4 rounded-2xl object-cover shadow-2xl animate-float-slow"
                 />
 
@@ -486,7 +622,7 @@ export default function Home() {
                 </div>
 
                 {/* Élément flottant Award */}
-                <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-gradient-to-r from-rose-600 to-pink-600 rounded-2xl shadow-2xl animate-float-reverse">
+                <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl shadow-2xl animate-float-reverse">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Award className="h-8 w-8 text-white" />
                   </div>
@@ -513,25 +649,24 @@ export default function Home() {
 
       {/* ============ COLLECTION PRODUITS 3D ============ */}
       <section className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-rose-900/5 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-900/5 to-transparent"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-20">
             <h2 className="text-5xl font-bold text-white mb-6">
-              La <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">Collection</span> Signature
+              La <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">Collection</span> Bio
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Chaque produit est une symphonie de saveurs et de sensations, 
-              créée par nos maîtres parfumeurs et sexologues
+              Chaque produit est une symphonie de saveurs et de bienfaits, 
+              créée par nos experts en agriculture biologique
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {localProducts.map((product, index) => (
+            {localProducts.map((product) => (
               <ProductCard3D 
                 key={product.id} 
                 product={product} 
-                index={index}
                 onAddToCart={() => handleAddToCart(product)}
               />
             ))}
@@ -540,30 +675,30 @@ export default function Home() {
       </section>
 
       {/* ============ EXPÉRIENCE IMMERSIVE ============ */}
-      <section className="py-32 bg-gradient-to-br from-gray-800 via-purple-900/50 to-pink-900/50 text-white relative overflow-hidden">
+      <section className="py-32 bg-gradient-to-br from-gray-800 via-emerald-900/50 to-green-900/50 text-white relative overflow-hidden">
         {/* EFFETS SPÉCIAUX FLOTTANTS */}
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-rose-500 to-transparent animate-shimmer-slow"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent animate-shimmer-slow" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent animate-shimmer-slow"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-green-500 to-transparent animate-shimmer-slow" style={{ animationDelay: '1s' }}></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h3 className="text-4xl font-bold mb-8">
-                L&apos;<span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">Expérience</span> Complète
+                L&apos;<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">Expérience</span> Complète
               </h3>
               
               <div className="space-y-8">
                 <div className="flex items-start gap-4 group cursor-pointer">
                   <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 animate-float-slow">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 animate-float-slow">
                       <Package className="h-6 w-6" />
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold mb-2 text-white group-hover:text-rose-400 transition-colors">Unboxing Premium</h4>
-                    <p className="text-gray-300">Chaque commande arrive dans un coffret luxueux avec guide d&apos;utilisation et surprises exclusives</p>
+                    <h4 className="text-xl font-bold mb-2 text-white group-hover:text-emerald-400 transition-colors">Emballage Écologique</h4>
+                    <p className="text-gray-300">Chaque commande arrive dans un emballage 100% biodégradable avec guide d&apos;utilisation</p>
                   </div>
                 </div>
 
@@ -574,8 +709,8 @@ export default function Home() {
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold mb-2 text-white group-hover:text-rose-400 transition-colors">Conciergerie Privée</h4>
-                    <p className="text-gray-300">Accès à nos experts pour des conseils personnalisés et un accompagnement sur mesure</p>
+                    <h4 className="text-xl font-bold mb-2 text-white group-hover:text-emerald-400 transition-colors">Conseils Experts</h4>
+                    <p className="text-gray-300">Accès à nos experts pour des conseils personnalisés sur l&apos;utilisation des produits bio</p>
                   </div>
                 </div>
 
@@ -586,8 +721,8 @@ export default function Home() {
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold mb-2 text-white group-hover:text-rose-400 transition-colors">Programme Fidélité</h4>
-                    <p className="text-gray-300">Accumulez des points pour des produits exclusifs, voyages et expériences uniques</p>
+                    <h4 className="text-xl font-bold mb-2 text-white group-hover:text-emerald-400 transition-colors">Programme Fidélité Bio</h4>
+                    <p className="text-gray-300">Accumulez des points pour des produits exclusifs et soutenez l&apos;agriculture durable</p>
                   </div>
                 </div>
               </div>
@@ -595,22 +730,22 @@ export default function Home() {
 
             {/* VISUALISATION INTERACTIVE */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-gray-800/50 to-gray-800/30 rounded-3xl p-8 backdrop-blur-sm border border-rose-500/20 animate-fade-in">
-                <h4 className="text-2xl font-bold mb-6 text-white">Votre Progression</h4>
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-800/30 rounded-3xl p-8 backdrop-blur-sm border border-emerald-500/20 animate-fade-in">
+                <h4 className="text-2xl font-bold mb-6 text-white">Votre Progression Bio</h4>
                 
                 <div className="space-y-8">
                   <ProgressBar value={55} label="Satisfaction Clients" />
-                  <ProgressBar value={72} label="Efficacité Produits" />
-                  <ProgressBar value={48} label="Retour Clientèle" />
-                  <ProgressBar value={65} label="Qualité Ingrédients" />
+                  <ProgressBar value={62} label="Qualité Produits" />
+                  <ProgressBar value={78} label="Retour Clientèle" />
+                  <ProgressBar value={45} label="Certification Bio" />
                 </div>
 
-                <div className="mt-12 p-6 bg-gradient-to-r from-rose-600/20 to-pink-600/20 rounded-xl border border-rose-500/20 backdrop-blur-sm animate-pulse-slow">
+                <div className="mt-12 p-6 bg-gradient-to-r from-emerald-600/20 to-green-600/20 rounded-xl border border-emerald-500/20 backdrop-blur-sm animate-pulse-slow">
                   <div className="flex items-center gap-4">
                     <ShieldCheck className="h-8 w-8 text-emerald-400" />
                     <div>
-                      <h5 className="font-bold text-white">Garantie Extendue</h5>
-                      <p className="text-sm text-gray-300">Satisfait ou remboursé pendant 90 jours</p>
+                      <h5 className="font-bold text-white">Garantie Bio</h5>
+                      <p className="text-sm text-gray-300">Satisfait ou remboursé pendant 30 jours</p>
                     </div>
                   </div>
                 </div>
@@ -622,34 +757,52 @@ export default function Home() {
 
       {/* ============ FOOTER ULTIME ============ */}
       <footer className="bg-gray-950 text-white py-20 relative overflow-hidden border-t border-gray-800">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-rose-900/5 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-900/5 to-transparent"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-pink-600 rounded-full blur"></div>
-                  <Heart className="relative h-8 w-8 text-white" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-green-600 rounded-full blur"></div>
+                  <Leaf className="relative h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-white">Fleur Sucrée</h3>
               </div>
               <p className="text-gray-400 mb-6">
-                Redéfinir l&apos;excellence sensorielle depuis 2025
+                L&apos;excellence biologique depuis 2025
               </p>
               <div className="flex gap-4">
-                <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-rose-600 transition-colors animate-float-slow">
+                {/* Instagram - Remplacez le href par votre lien */}
+                <a 
+                  href={socialLinks.instagram} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-gray-800 hover:bg-emerald-600 transition-colors animate-float-slow group relative"
+                >
                   <Instagram className="h-5 w-5" />
+                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    @votreinstagram
+                  </span>
                 </a>
-                <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-rose-600 transition-colors animate-float-reverse">
+                {/* Facebook - Remplacez le href par votre lien */}
+                <a 
+                  href={socialLinks.facebook} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-gray-800 hover:bg-emerald-600 transition-colors animate-float-reverse group relative"
+                >
                   <Facebook className="h-5 w-5" />
+                  <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    /votrefacebook
+                  </span>
                 </a>
               </div>
             </div>
 
             {[
-              { title: 'Collections', items: ['Signature', 'Limited Edition', 'Sur Mesure', 'Édition Or'] },
-              { title: 'Services', items: ['Conciergerie', 'Consultation', 'Ateliers', 'Cadeaux'] },
+              { title: 'Collections', items: ['Signature Bio', 'Édition Limitée', 'Sur Mesure', 'Édition Or'] },
+              { title: 'Services', items: ['Conseils Experts', 'Consultation', 'Ateliers Bio', 'Cadeaux'] },
               { title: 'Entreprise', items: ['Notre Histoire', 'Carrières', 'Presse', 'Boutiques'] }
             ].map((column, idx) => (
               <div key={idx} className="animate-fade-in" style={{ animationDelay: `${idx * 0.2}s` }}>
@@ -657,7 +810,7 @@ export default function Home() {
                 <ul className="space-y-3">
                   {column.items.map((item, itemIdx) => (
                     <li key={itemIdx}>
-                      <a href="#" className="text-gray-400 hover:text-rose-400 transition-colors flex items-center gap-2">
+                      <a href="#" className="text-gray-400 hover:text-emerald-400 transition-colors flex items-center gap-2">
                         <ChevronRight className="h-3 w-3" />
                         {item}
                       </a>
@@ -668,36 +821,68 @@ export default function Home() {
             ))}
           </div>
 
-          {/* NEWSLETTER PREMIUM */}
+          {/* NEWSLETTER FONCTIONNELLE */}
           <div className="border-t border-gray-800 pt-12">
             <div className="grid lg:grid-cols-2 gap-8 items-center">
               <div>
                 <h4 className="text-2xl font-bold mb-4 text-white">
-                  Accédez aux <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">Préviews Exclusives</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">
+                    Inscrivez-vous à notre newsletter
+                  </span>
                 </h4>
                 <p className="text-gray-400">
-                  Soyez les premiers à découvrir nos nouvelles collections et recevez des avantages VIP
+                  Soyez les premiers à découvrir nos nouvelles collections bio et recevez des offres exclusives.
+                  <br />
+                  <span className="text-emerald-400 text-sm mt-2 block">
+                    Le client et l&apos;admin recevront une notification par email
+                  </span>
                 </p>
               </div>
               
               <div className="relative">
-                <div className="flex gap-4">
-                  <input
-                    type="email"
-                    placeholder="Votre email exclusif"
-                    className="flex-grow bg-gray-800 border border-gray-700 rounded-xl px-6 py-4 focus:outline-none focus:border-rose-500 text-white placeholder-gray-500"
-                  />
-                  <button className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 hover:scale-105 animate-pulse-slow">
-                    S&apos;inscrire
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-3">En vous inscrivant, vous acceptez nos conditions de confidentialité</p>
+                <form onSubmit={handleNewsletterSubmit}>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-grow">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Votre email exclusif"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 text-white placeholder-gray-500"
+                        required
+                      />
+                    </div>
+                    <button 
+                      type="submit"
+                      disabled={loading}
+                      className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 hover:scale-105 animate-pulse-slow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[140px]"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Envoi...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="h-5 w-5" />
+                          S&apos;inscrire
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+                <p className="text-xs text-gray-500 mt-3">
+                  En vous inscrivant, vous acceptez nos conditions de confidentialité.
+                  <br />
+                  
+                </p>
               </div>
             </div>
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
-            <p>&copy; 2025 Fleur Sucrée. Tous droits réservés. L&apos;excellence a un nom.</p>
+            <p>&copy; 2025 Fleur Sucrée. Tous droits réservés. L&apos;excellence biologique a un nom.</p>
+           <>by DONA</>
           </div>
         </div>
       </footer>
@@ -800,6 +985,15 @@ export default function Home() {
         
         .backface-hidden {
           backface-visibility: hidden;
+        }
+        
+        /* Animation de spin pour le bouton loading */
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        .animate-spin {
+          animation: spin 1s linear infinite;
         }
       `}</style>
     </div>

@@ -18,17 +18,22 @@ export async function middleware(req: NextRequest) {
     if (!session) {
       // Pas de session Supabase : vérifier un cookie admin mis par la connexion simulée
       const isAdminCookie = req.cookies.get('is_admin')?.value === '1';
-      const adminEmail = req.cookies.get('admin_email')?.value || '';
-      const allowedAdmins = ['donaagbenu2000@gmail.com', 'agbagnof@gmail.com'];
+      const adminPhone = req.cookies.get('admin_phone')?.value || '';
+      
+      // Numéro admin autorisé
+      const allowedAdmins = ['+22897852652'];
 
-      if (isAdminCookie && allowedAdmins.includes(decodeURIComponent(adminEmail))) {
+      if (isAdminCookie && allowedAdmins.includes(decodeURIComponent(adminPhone))) {
         return res; // laisser passer
       }
 
-      return NextResponse.redirect(new URL('/auth/login', req.url));
+      // Rediriger vers la page de connexion
+      const redirectUrl = new URL('/auth/login', req.url);
+      redirectUrl.searchParams.set('redirect', req.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
     }
 
-    // Vérifier si l'utilisateur est admin via profile
+    // Vérifier si l'utilisateur est admin via profile (pour les vrais utilisateurs Supabase)
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -40,9 +45,34 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Routes protégées pour clients connectés
+  const clientRoutes = ['/profile', '/cart', '/checkout', '/orders'];
+  const isClientRoute = clientRoutes.some(route => req.nextUrl.pathname.startsWith(route));
+
+  if (isClientRoute) {
+    if (!session) {
+      // Vérifier les cookies pour les clients simulés
+      const isClientCookie = req.cookies.get('is_client')?.value === '1';
+      const clientPhone = req.cookies.get('client_phone')?.value;
+
+      if (!isClientCookie || !clientPhone) {
+        // Rediriger vers la page de connexion
+        const redirectUrl = new URL('/auth/login', req.url);
+        redirectUrl.searchParams.set('redirect', req.nextUrl.pathname);
+        return NextResponse.redirect(redirectUrl);
+      }
+    }
+  }
+
   return res;
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*']
+  matcher: [
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/cart/:path*',
+    '/checkout/:path*',
+    '/orders/:path*'
+  ]
 };

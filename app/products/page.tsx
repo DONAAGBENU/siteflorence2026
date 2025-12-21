@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { 
   Filter, Search, Star, Heart, 
-  Sparkles, Package, ShoppingBag
+  Sparkles, Package, ShoppingBag,
+  User, Settings, LogOut, Camera,
+  Shield, Lock, Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
@@ -21,15 +24,24 @@ interface Product {
   rating: number;
   ingredients: string[];
   stock: number;
+  created_at: string;
 }
 
 export default function ProductsPage() {
-  const { user } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+    avatar: ''
+  });
 
   const categories = [
     { id: 'all', name: 'Tous les produits' },
@@ -41,7 +53,14 @@ export default function ProductsPage() {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+    if (user) {
+      setProfileData(prev => ({
+        ...prev,
+        name: user.name || '',
+        avatar: user.avatar || ''
+      }));
+    }
+  }, [user]);
 
   const fetchProducts = async () => {
     try {
@@ -75,6 +94,49 @@ export default function ProductsPage() {
     );
   };
 
+  const handleUpdateProfile = async () => {
+    try {
+      if (profileData.newPassword && profileData.newPassword !== profileData.confirmPassword) {
+        alert('Les nouveaux mots de passe ne correspondent pas');
+        return;
+      }
+
+      const updateData: any = {};
+      if (profileData.name) updateData.name = profileData.name;
+      if (profileData.newPassword) updateData.password = profileData.newPassword;
+      if (profileData.avatar) updateData.avatar = profileData.avatar;
+
+      await updateProfile(updateData);
+      alert('Profil mis à jour avec succès!');
+      setShowProfile(false);
+      
+      // Réinitialiser les champs de mot de passe
+      setProfileData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }));
+    } catch (error) {
+      alert('Erreur lors de la mise à jour du profil');
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Simuler un téléchargement (dans un vrai projet, uploader vers Supabase Storage)
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfileData(prev => ({
+        ...prev,
+        avatar: reader.result as string
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 flex items-center justify-center">
@@ -85,19 +147,164 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 py-12">
-      {/* Hero Section */}
+      {/* Header avec profil */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-rose-500/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
-            <Sparkles className="h-4 w-4 text-rose-400" />
-            <span className="text-sm font-bold text-rose-400">Collection Exclusif</span>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-rose-500/10 backdrop-blur-sm px-4 py-2 rounded-full mb-3">
+              <Sparkles className="h-4 w-4 text-rose-400" />
+              <span className="text-sm font-bold text-rose-400">Collection Exclusif</span>
+            </div>
+            <h1 className="text-5xl font-bold text-white mb-2">
+              Nos <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">Élixirs</span> d&apos;Exception
+            </h1>
+            <p className="text-xl text-gray-300">
+              Découvrez notre collection exclusive
+            </p>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">
-            Nos <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-amber-400">Élixirs</span> d&apos;Exception
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Découvrez notre collection exclusive de produits naturels conçus pour sublimer votre intimité
-          </p>
+          
+          {/* Bouton profil */}
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowProfile(!showProfile)}
+                className="flex items-center gap-3 bg-gray-800/50 backdrop-blur-sm px-4 py-3 rounded-xl border border-gray-700 hover:border-rose-500/50 transition-colors"
+              >
+                <div className="relative">
+                  {profileData.avatar ? (
+                    <div className="w-10 h-10 rounded-full overflow-hidden">
+                      <Image
+                        src={profileData.avatar}
+                        alt={user.name}
+                        width={40}
+                        height={40}
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 flex items-center justify-center">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="text-left">
+                  <p className="text-white font-medium">{user.name}</p>
+                  <p className="text-sm text-gray-400">{user.phone}</p>
+                </div>
+              </button>
+              
+              {/* Menu profil */}
+              {showProfile && (
+                <div className="absolute right-0 mt-2 w-80 bg-gray-800/90 backdrop-blur-lg rounded-xl border border-gray-700 shadow-2xl z-50">
+                  <div className="p-6">
+                    {/* Photo de profil */}
+                    <div className="flex flex-col items-center mb-6">
+                      <div className="relative mb-4">
+                        {profileData.avatar ? (
+                          <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-rose-500">
+                            <Image
+                              src={profileData.avatar}
+                              alt={user.name}
+                              width={80}
+                              height={80}
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 flex items-center justify-center border-2 border-rose-500">
+                            <User className="h-8 w-8 text-white" />
+                          </div>
+                        )}
+                        <label className="absolute bottom-0 right-0 bg-rose-600 p-2 rounded-full cursor-pointer hover:bg-rose-700">
+                          <Camera className="h-4 w-4 text-white" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                      <h3 className="text-lg font-bold text-white">{user.name}</h3>
+                      <p className="text-gray-400">{user.phone}</p>
+                    </div>
+                    
+                    {/* Formulaire de mise à jour */}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Nom complet
+                        </label>
+                        <input
+                          type="text"
+                          value={profileData.name}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                          Nouveau mot de passe
+                        </label>
+                        <input
+                          type="password"
+                          value={profileData.newPassword}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, newPassword: e.target.value }))}
+                          placeholder="Laisser vide pour ne pas changer"
+                          className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white"
+                        />
+                      </div>
+                      
+                      {profileData.newPassword && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Confirmer le nouveau mot de passe
+                          </label>
+                          <input
+                            type="password"
+                            value={profileData.confirmPassword}
+                            onChange={(e) => setProfileData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                            className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white"
+                          />
+                        </div>
+                      )}
+                      
+                      <Button
+                        onClick={handleUpdateProfile}
+                        className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Mettre à jour le profil
+                      </Button>
+                      
+                      <Button
+                        onClick={logout}
+                        variant="outline"
+                        className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Se déconnecter
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <Link href="/auth/register">
+                <Button className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700">
+                  S&apos;inscrire
+                </Button>
+              </Link>
+              <Link href="/auth/login">
+                <Button variant="outline" className="border-rose-500 text-rose-400">
+                  Se connecter
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
@@ -206,7 +413,6 @@ export default function ProductsPage() {
                       variant="outline"
                       className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
                       onClick={() => {
-                        // Voir détails
                         window.location.href = `/products/${product.id}`;
                       }}
                     >
@@ -236,15 +442,15 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* CTA pour les non-connectés */}
+      {/* Section pour les non-connectés */}
       {!user && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
           <div className="bg-gradient-to-r from-rose-600/20 to-pink-600/20 rounded-2xl p-8 text-center border border-rose-500/20">
             <h3 className="text-2xl font-bold text-white mb-4">
-              Accédez à des fonctionnalités exclusives
+              Accédez à votre espace personnel
             </h3>
             <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-              Créez un compte gratuit pour enregistrer vos favoris, suivre vos commandes et recevoir nos offres spéciales.
+              Créez un compte gratuit pour gérer votre profil, enregistrer vos favoris et suivre vos commandes.
             </p>
             <div className="flex gap-4 justify-center">
               <Link href="/auth/register">

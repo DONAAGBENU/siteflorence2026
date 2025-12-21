@@ -8,7 +8,7 @@ export type UserRole = 'admin' | 'client';
 
 export interface User {
   id: string;
-  email: string;
+  phone: string;
   name: string;
   role: UserRole;
   avatar?: string;
@@ -18,10 +18,11 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  login: (phone: string, password: string) => Promise<void>;
+  register: (phone: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
+  updateProfile: (data: { name?: string; password?: string; avatar?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,111 +40,120 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Initialiser les admins (emails et mots de passe fournis)
+  // Initialiser les admins
   const adminUsers = [
-    { email: 'donaagbenu2000@gmail.com', password: 'AGBENUDONATIEN2000', name: 'Donatien Admin', role: 'admin' as UserRole },
-    { email: 'agbagnof@gmail.com', password: 'FLORENCE12345', name: 'Florence Admin', role: 'admin' as UserRole }
+    { phone: '+22897852652', password: 'FLORENCE12345', name: 'FLORENCE', role: 'admin' as UserRole }
   ];
 
   useEffect(() => {
-    // Vérifier la session au chargement
-    const checkUser = async () => {
-      try {
-        const session = await supabase.auth.getSession();
-        
-        if (session.data.session?.user) {
-          // Récupérer les infos utilisateur depuis la table profiles
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.data.session.user.id)
-            .single();
-
-          if (profile) {
-            setUser({
-              id: profile.id,
-              email: profile.email,
-              name: profile.name,
-              role: profile.role,
-              avatar: profile.avatar,
-              createdAt: new Date(profile.created_at)
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Erreur lors de la vérification de la session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     checkUser();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      await checkUser();
+    });
 
-    // Écouter les changements d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-      if (session?.user) {
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      // Vérifier les cookies d'abord (pour les sessions simulées)
+      const isAdmin = document.cookie.includes('is_admin=1');
+      const adminPhone = getCookie('admin_phone');
+      const isClient = document.cookie.includes('is_client=1');
+      const clientPhone = getCookie('client_phone');
+      
+      if (isAdmin && adminPhone) {
+        const adminUser = adminUsers.find(u => u.phone === adminPhone);
+        if (adminUser) {
+          setUser({
+            id: `admin-${Date.now()}`,
+            phone: adminUser.phone,
+            name: adminUser.name,
+            role: 'admin',
+            createdAt: new Date()
+          });
+          setLoading(false);
+          return;
+        }
+      }
+      
+      if (isClient && clientPhone) {
+        const clientName = getCookie('client_name') || clientPhone;
+        setUser({
+          id: `client-${Date.now()}`,
+          phone: decodeURIComponent(clientPhone),
+          name: decodeURIComponent(clientName),
+          role: 'client',
+          createdAt: new Date()
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Vérifier session Supabase (si utilisée plus tard)
+      const session = await supabase.auth.getSession();
+      if (session.data.session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', session.user.id)
+          .eq('id', session.data.session.user.id)
           .single();
 
         if (profile) {
           setUser({
             id: profile.id,
-            email: profile.email,
+            phone: profile.phone,
             name: profile.name,
             role: profile.role,
             avatar: profile.avatar,
             createdAt: new Date(profile.created_at)
           });
         }
-      } else {
-        setUser(null);
       }
+    } catch (error) {
+      console.error('Erreur vérification utilisateur:', error);
+    } finally {
       setLoading(false);
-    });
+    }
+  };
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const login = async (email: string, password: string) => {
+  const login = async (phone: string, password: string) => {
     setLoading(true);
     try {
+      const cleanPhone = phone.trim();
+      
       // Vérifier si c'est un admin
-      const adminUser = adminUsers.find(u => u.email === email && u.password === password);
+      const adminUser = adminUsers.find(u => u.phone === cleanPhone && u.password === password);
 
       if (adminUser) {
-        // Simuler la connexion admin en local (on ne force pas supabase)
+        // Admin
         const admin: User = {
           id: `admin-${Date.now()}`,
-          email: adminUser.email,
+          phone: adminUser.phone,
           name: adminUser.name,
           role: 'admin',
           createdAt: new Date()
         };
 
         setUser(admin);
-        // Définir un cookie non-httpOnly pour que le middleware (côté serveur)
-        // puisse reconnaître l'admin lors des requêtes vers les routes protégées.
-        try {
-          document.cookie = `is_admin=1; max-age=${60 * 60}; path=/`;
-          document.cookie = `admin_email=${encodeURIComponent(adminUser.email)}; max-age=${60 * 60}; path=/`;
-        } catch (e) {
-          // ignore in non-browser env
-        }
+        setCookie('is_admin', '1', 24);
+        setCookie('admin_phone', encodeURIComponent(adminUser.phone), 24);
         router.push('/dashboard');
       } else {
-        // Pour les clients : accepter n'importe quel email/mot de passe et créer une session locale
+        // Client
         const clientUser: User = {
-          id: `guest-${Date.now()}`,
-          email,
-          name: email.split('@')[0],
+          id: `client-${Date.now()}`,
+          phone: cleanPhone,
+          name: cleanPhone,
           role: 'client',
           createdAt: new Date()
         };
 
         setUser(clientUser);
+        setCookie('is_client', '1', 24);
+        setCookie('client_phone', encodeURIComponent(cleanPhone), 24);
+        setCookie('client_name', encodeURIComponent(cleanPhone), 24);
         router.push('/products');
       }
     } catch (error: any) {
@@ -153,37 +163,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (phone: string, password: string, name: string) => {
     setLoading(true);
     try {
-      const response = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name
-          }
-        }
-      });
-
-      if (response.error) throw response.error;
-
-      if (response.data.user) {
-        // Créer le profil utilisateur
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: response.data.user.id,
-            email,
-            name,
-            role: 'client',
-            created_at: new Date().toISOString()
-          });
-
-        if (profileError) throw profileError;
-
-        router.push('/auth/login?registered=true');
+      const cleanPhone = phone.trim();
+      
+      if (!cleanPhone.startsWith('+')) {
+        throw new Error('Le numéro doit commencer par + (ex: +228XXXXXXXXX)');
       }
+
+      // Créer l'utilisateur client
+      const clientUser: User = {
+        id: `client-${Date.now()}`,
+        phone: cleanPhone,
+        name: name || cleanPhone,
+        role: 'client',
+        createdAt: new Date()
+      };
+
+      setUser(clientUser);
+      setCookie('is_client', '1', 24);
+      setCookie('client_phone', encodeURIComponent(cleanPhone), 24);
+      setCookie('client_name', encodeURIComponent(name || cleanPhone), 24);
+      setCookie('client_password', encodeURIComponent(password), 24);
+      
+      // Rediriger directement vers /products
+      router.push('/products');
+      
     } catch (error: any) {
       throw new Error(error.message || 'Erreur d\'inscription');
     } finally {
@@ -191,18 +197,70 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateProfile = async (data: { name?: string; password?: string; avatar?: string }): Promise<void> => {
+    try {
+      if (data.name && user) {
+        setCookie('client_name', encodeURIComponent(data.name), 24);
+        
+        // Mettre à jour l'état local
+        setUser({
+          ...user,
+          name: data.name,
+          avatar: data.avatar || user.avatar
+        });
+      }
+      
+      if (data.password) {
+        setCookie('client_password', encodeURIComponent(data.password), 24);
+      }
+      
+      if (data.avatar && user && !data.name) {
+        setUser({
+          ...user,
+          avatar: data.avatar
+        });
+      }
+    } catch (error) {
+      throw new Error('Erreur lors de la mise à jour');
+    }
+  };
+
   const logout = async () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
-      try {
-        document.cookie = 'is_admin=; max-age=0; path=/';
-        document.cookie = 'admin_email=; max-age=0; path=/';
-      } catch (e) {}
+      deleteCookie('is_admin');
+      deleteCookie('admin_phone');
+      deleteCookie('is_client');
+      deleteCookie('client_phone');
+      deleteCookie('client_name');
+      deleteCookie('client_password');
       router.push('/auth/login');
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
+      console.error('Erreur déconnexion:', error);
     }
+  };
+
+  // Fonctions utilitaires pour les cookies
+  const setCookie = (name: string, value: string, hours: number) => {
+    const expires = new Date(Date.now() + hours * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+  };
+
+  const getCookie = (name: string): string | null => {
+    if (typeof document === 'undefined') return null;
+    
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      const cookieValue = parts.pop()?.split(';').shift();
+      return cookieValue || null;
+    }
+    return null;
+  };
+
+  const deleteCookie = (name: string) => {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   };
 
   const isAdmin = user?.role === 'admin';
@@ -214,7 +272,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       login,
       register,
       logout,
-      isAdmin
+      isAdmin,
+      updateProfile
     }}>
       {children}
     </AuthContext.Provider>

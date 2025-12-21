@@ -1,379 +1,244 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  Upload, X, Image as ImageIcon, 
-  Package, Tag, DollarSign, 
-  Star, Info, Save
+  Edit, Trash2, Eye, Plus,
+  Package, Search, Filter
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { supabase } from '@/lib/supabase';
 
-export default function AddProductPage() {
-  const { isAdmin, loading } = useAuth();
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  stock: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export default function ProductsDashboardPage() {
+  const { isAdmin } = useAuth();
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    originalPrice: '',
-    category: '',
-    rating: '4.5',
-    ingredients: '',
-    stock: '50'
-  });
-
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  if (!loading && !isAdmin) {
+  if (!isAdmin) {
     router.push('/auth/login');
     return null;
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      console.log('Fetching products...');
       
-      setImages(prev => [...prev, ...newFiles]);
-      setImagePreviews(prev => [...prev, ...newPreviews]);
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const uploadImages = async (): Promise<string[]> => {
-    if (images.length === 0) return [];
-
-    const uploadedUrls: string[] = [];
-
-    for (const image of images) {
-      const fileName = `${Date.now()}-${image.name}`;
-      const { data, error } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, image);
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price, category, stock, is_active, created_at')
+        .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error uploading image:', error);
-        continue;
+        console.error('Supabase fetch error:', error);
+        throw error;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
-
-      uploadedUrls.push(publicUrl);
+      console.log('Products fetched:', data);
+      setProducts(data || []);
+    } catch (error: any) {
+      console.error('Error fetching products:', error.message || error);
+      // Afficher une erreur plus spécifique
+      alert('Erreur de connexion à la base de données. Vérifiez votre connexion internet ou contactez l\'administrateur.');
+    } finally {
+      setLoading(false);
     }
-
-    return uploadedUrls;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!formData.name || !formData.description || !formData.price) {
-      setError('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
-    setUploading(true);
+  const handleDelete = async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return;
 
     try {
-      // Upload des images
-      const imageUrls = await uploadImages();
-
-      // Préparer les données du produit
-      const productData = {
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
-        category: formData.category,
-        rating: parseFloat(formData.rating),
-        ingredients: formData.ingredients.split(',').map(item => item.trim()),
-        stock: parseInt(formData.stock),
-        images: imageUrls,
-        is_active: true,
-        created_at: new Date().toISOString()
-      };
-
-      // Sauvegarder dans Supabase
-      const { error: dbError } = await supabase
+      console.log('Deleting product:', id);
+      
+      const { error } = await supabase
         .from('products')
-        .insert([productData]);
+        .delete()
+        .eq('id', id);
 
-      if (dbError) throw dbError;
-
-      setSuccess('Produit ajouté avec succès !');
-      setFormData({
-        name: '',
-        description: '',
-        price: '',
-        originalPrice: '',
-        category: '',
-        rating: '4.5',
-        ingredients: '',
-        stock: '50'
-      });
-      setImages([]);
-      setImagePreviews([]);
-
-      // Redirection après 2 secondes
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
-
-    } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'ajout du produit');
-    } finally {
-      setUploading(false);
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
+      
+      // Rafraîchir la liste
+      fetchProducts();
+      alert('Produit supprimé avec succès!');
+    } catch (error: any) {
+      console.error('Error deleting product:', error.message || error);
+      alert('Erreur lors de la suppression: ' + (error.message || 'Erreur inconnue'));
     }
   };
 
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (product.category && product.category.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 flex items-center justify-center">
+        <div className="text-white">Chargement des produits...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Ajouter un nouveau produit
-          </h1>
-          <p className="text-gray-400">
-            Créez un nouvel élixir pour votre boutique
-          </p>
-        </div>
-
-        {/* Messages */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400">
-            {error}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Gestion des produits</h1>
+            <p className="text-gray-400">
+              {products.length} produit{products.length !== 1 ? 's' : ''} au total
+            </p>
           </div>
-        )}
-
-        {success && (
-          <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-lg text-green-400">
-            {success}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Section Images */}
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Images du produit
-            </h2>
-
-            {/* Zone d'upload */}
-            <div 
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center cursor-pointer hover:border-rose-500 transition-colors mb-6"
-            >
-              <Upload className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400 mb-2">
-                Cliquez pour sélectionner des images depuis votre PC
-              </p>
-              <p className="text-sm text-gray-500">
-                Formats supportés: JPG, PNG, WEBP (max 5MB)
-              </p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-            </div>
-
-            {/* Prévisualisation des images */}
-            {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index}`}
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Section Informations */}
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
-            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <Info className="h-5 w-5" />
-              Informations du produit
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Package className="h-4 w-4 inline mr-2" />
-                  Nom du produit *
-                </label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Ex: Élixir Passion"
-                  className="bg-gray-800/50 border-gray-700 text-white"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Tag className="h-4 w-4 inline mr-2" />
-                  Catégorie *
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-rose-500"
-                  required
-                >
-                  <option value="">Sélectionner une catégorie</option>
-                  <option value="premium">Premium</option>
-                  <option value="signature">Signature</option>
-                  <option value="gourmet">Gourmet</option>
-                  <option value="luxe">Luxe</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <DollarSign className="h-4 w-4 inline mr-2" />
-                  Prix (FCFA) *
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
-                  placeholder="79.99"
-                  className="bg-gray-800/50 border-gray-700 text-white"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <DollarSign className="h-4 w-4 inline mr-2" />
-                  Prix original (promotion)
-                </label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.originalPrice}
-                  onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
-                  placeholder="99.99"
-                  className="bg-gray-800/50 border-gray-700 text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <Star className="h-4 w-4 inline mr-2" />
-                  Note (0-5)
-                </label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  value={formData.rating}
-                  onChange={(e) => setFormData({...formData, rating: e.target.value})}
-                  className="bg-gray-800/50 border-gray-700 text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  📦 Stock
-                </label>
-                <Input
-                  type="number"
-                  value={formData.stock}
-                  onChange={(e) => setFormData({...formData, stock: e.target.value})}
-                  className="bg-gray-800/50 border-gray-700 text-white"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Description détaillée *
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Décrivez votre produit..."
-                rows={4}
-                className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-rose-500"
-                required
-              />
-            </div>
-
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Ingrédients (séparés par des virgules)
-              </label>
-              <Input
-                value={formData.ingredients}
-                onChange={(e) => setFormData({...formData, ingredients: e.target.value})}
-                placeholder="Vanille, Safran, Maca, ..."
-                className="bg-gray-800/50 border-gray-700 text-white"
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                Séparez chaque ingrédient par une virgule
-              </p>
-            </div>
-          </div>
-
-          {/* Boutons d'action */}
+          
           <div className="flex gap-4">
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push('/dashboard')}
-              className="border-gray-700 text-gray-300"
+              onClick={() => router.push('/dashboard/products/add')}
+              className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700"
             >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              loading={uploading}
-              className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white"
-            >
-              <Save className="h-5 w-5 mr-2" />
-              {uploading ? 'Enregistrement...' : 'Enregistrer le produit'}
+              <Plus className="h-4 w-4 mr-2" />
+              Nouveau produit
             </Button>
           </div>
-        </form>
+        </div>
+
+        {/* Barre de recherche */}
+        <div className="mb-8">
+          <div className="relative max-w-md">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher un produit..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white"
+            />
+          </div>
+        </div>
+
+        {/* Tableau des produits */}
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-900/50">
+                  <th className="py-4 px-6 text-left text-sm font-medium text-gray-300">Produit</th>
+                  <th className="py-4 px-6 text-left text-sm font-medium text-gray-300">Catégorie</th>
+                  <th className="py-4 px-6 text-left text-sm font-medium text-gray-300">Prix</th>
+                  <th className="py-4 px-6 text-left text-sm font-medium text-gray-300">Stock</th>
+                  <th className="py-4 px-6 text-left text-sm font-medium text-gray-300">Statut</th>
+                  <th className="py-4 px-6 text-left text-sm font-medium text-gray-300">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {filteredProducts.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-800/30">
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center">
+                          <Package className="h-6 w-6 text-gray-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">{product.name}</p>
+                          <p className="text-sm text-gray-400">
+                            Créé le {new Date(product.created_at).toLocaleDateString('fr-FR')}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400">
+                        {product.category}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <p className="text-lg font-bold text-rose-400">{product.price.toFixed(2)}€</p>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          product.stock > 50 
+                            ? 'bg-green-500/20 text-green-400' 
+                            : product.stock > 10
+                            ? 'bg-yellow-500/20 text-yellow-400'
+                            : 'bg-red-500/20 text-red-400'
+                        }`}>
+                          {product.stock} unités
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        product.is_active 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {product.is_active ? 'Actif' : 'Inactif'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => router.push(`/dashboard/products/edit/${product.id}`)}
+                          className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => router.push(`/products/${product.id}`)}
+                          className="p-2 text-gray-400 hover:bg-gray-700 rounded-lg"
+                          title="Voir en détail"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <Package className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+            <p className="text-xl text-gray-400">
+              {searchQuery ? 'Aucun produit trouvé' : 'Aucun produit disponible'}
+            </p>
+            <p className="text-gray-500">
+              {searchQuery ? 'Essayez de modifier votre recherche' : 'Commencez par ajouter un produit'}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

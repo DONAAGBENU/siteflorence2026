@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { Eye, EyeOff, Mail, Lock, User, Shield } from 'lucide-react';
+import { Eye, EyeOff, Phone, Lock, User, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,10 +33,15 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!phone.startsWith('+')) {
+      setError('Le numéro doit commencer par + (ex: +228XXXXXXXXX)');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await register(email, password, name);
+      await register(phone, password, name);
       setSuccess('Compte créé avec succès ! Redirection vers la connexion...');
     } catch (err: any) {
       setError(err.message || 'Erreur lors de l\'inscription');
@@ -47,7 +52,15 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full mx-auto">
+      {/* Background image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-20"
+        style={{ 
+          backgroundImage: 'url("https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")'
+        }}
+      ></div>
+      
+      <div className="max-w-4xl w-full mx-auto relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           {/* Logo / Intro */}
           <div className="text-center md:text-left px-4 md:px-0">
@@ -62,7 +75,7 @@ export default function RegisterPage() {
 
           {/* Formulaire */}
           <div className="px-4 md:px-0">
-            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 sm:p-8 shadow-2xl border border-blue-500/20">
+            <div className="bg-gray-800/70 backdrop-blur-lg rounded-2xl p-6 sm:p-8 shadow-2xl border border-blue-500/20">
               <h3 className="text-2xl font-bold text-white mb-6 text-center">
                 Créer un compte
               </h3>
@@ -101,17 +114,17 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Email
+                    Numéro de téléphone
                   </label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                      <Mail className="h-5 w-5 text-gray-400" />
+                      <Phone className="h-5 w-5 text-gray-400" />
                     </div>
                     <Input
-                      type="email"
-                      value={email}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                      placeholder="votre@email.com"
+                      type="tel"
+                      value={phone}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
+                      placeholder="+228XXXXXXXXX"
                       className="pl-12 bg-gray-900/50 border-gray-700 text-white"
                       required
                     />
