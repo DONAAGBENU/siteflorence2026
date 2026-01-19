@@ -88,7 +88,7 @@ export const Header = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-800">
                     <p className="text-sm font-medium text-white">{user.name}</p>
-                    <p className="text-xs text-gray-400">{user.email}</p>
+                    <p className="text-xs text-gray-400">{user.phone}</p>
                     {isAdmin && (
                       <div className="inline-flex items-center gap-1 mt-1 px-2 py-1 bg-rose-500/20 rounded-full">
                         <Shield className="h-3 w-3 text-rose-400" />
@@ -229,7 +229,7 @@ export const Header = () => {
               <>
                 <div className="px-4 py-3 border-b border-gray-800">
                   <p className="text-sm font-medium text-white">{user.name}</p>
-                  <p className="text-xs text-gray-400">{user.email}</p>
+                  <p className="text-xs text-gray-400">{user.phone}</p>
                 </div>
                 <Link
                   href="/profile"

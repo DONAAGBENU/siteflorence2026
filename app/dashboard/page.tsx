@@ -50,7 +50,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <h2 className="font-bold text-white">Admin Panel</h2>
-              <p className="text-xs text-gray-400">{user?.email}</p>
+              <p className="text-xs text-gray-400">{user?.phone}</p>
             </div>
           </div>
 
