@@ -205,7 +205,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Revenus</p>
-                  <p className="text-3xl font-bold text-white">{stats.revenue}€</p>
+                  <p className="text-3xl font-bold text-white">{stats.revenue.toLocaleString('fr-FR')} FCFA</p>
                 </div>
                 <BarChart className="h-10 w-10 text-amber-400" />
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
+import { formatPrice } from '@/app/lib/format';
 
 export default function AddProductPage() {
   const { isAdmin, loading: authLoading } = useAuth();
@@ -36,17 +37,29 @@ export default function AddProductPage() {
     is_active: true
   });
 
+  useEffect(() => {
+    if (!authLoading && !isAdmin) {
+      router.push('/auth/login');
+    }
+  }, [authLoading, isAdmin, router]);
+
   if (!authLoading && !isAdmin) {
-    router.push('/auth/login');
     return null;
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const fileToDataUrl = (file: File): Promise<string> => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Impossible de lire l’image'));
+    reader.readAsDataURL(file);
+  });
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
     const newFiles = Array.from(files);
-    const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+    const newPreviews = await Promise.all(newFiles.map(fileToDataUrl));
     
     setImages(prev => [...prev, ...newFiles]);
     setImagePreviews(prev => [...prev, ...newPreviews]);
@@ -78,8 +91,8 @@ export default function AddProductPage() {
 
     for (const image of images) {
       try {
-        const fileName = `${Date.now()}-${image.name}`;
-        const { error: uploadError } = await supabase.storage
+        const fileName = `${Date.now()}-${image.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const { data, error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(fileName, image, {
             cacheControl: '3600',
@@ -87,18 +100,24 @@ export default function AddProductPage() {
           });
 
         if (uploadError) {
-          console.error('Error uploading image:', uploadError);
-          throw uploadError;
+          console.warn('Image upload unavailable, saving image as embedded data instead:', uploadError.message);
+          const dataUrl = await fileToDataUrl(image);
+          uploadedUrls.push(dataUrl);
+          continue;
         }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(fileName);
+        if (data?.path) {
+          const { data: publicData } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(data.path);
 
-        uploadedUrls.push(publicUrl);
+          uploadedUrls.push(publicData?.publicUrl || (await fileToDataUrl(image)));
+        } else {
+          uploadedUrls.push(await fileToDataUrl(image));
+        }
       } catch (error) {
-        console.error('Failed to upload image:', error);
-        throw error;
+        console.warn('Failed to upload image, saving image as embedded data instead:', error);
+        uploadedUrls.push(await fileToDataUrl(image));
       }
     }
 
@@ -309,7 +328,7 @@ export default function AddProductPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Prix (€) *
+                  Prix (FCFA) *
                 </label>
                 <input
                   type="number"
@@ -324,7 +343,7 @@ export default function AddProductPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Ancien prix (€)
+                  Ancien prix (FCFA)
                 </label>
                 <input
                   type="number"

@@ -34,7 +34,7 @@ export function ProductSchema({ product }: {
     offers: {
       '@type': 'Offer',
       url: `https://siteflorence2026.com/products/${product.id}`,
-      priceCurrency: 'EUR',
+      priceCurrency: 'XOF',
       price: product.price,
       availability: 'https://schema.org/InStock',
     },

@@ -82,7 +82,7 @@ export const productSchema = (product: {
   offers: {
     '@type': 'Offer',
     url: `${siteConfig.url}/products/${product.id}`,
-    priceCurrency: 'EUR',
+    priceCurrency: 'XOF',
     price: product.price,
     availability: 'https://schema.org/InStock',
   },

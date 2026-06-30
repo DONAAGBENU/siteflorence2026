@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
+import { formatPrice } from '@/app/lib/format';
 
 interface Product {
   id: string;
@@ -179,7 +180,7 @@ export default function ProductsDashboardPage() {
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <p className="text-lg font-bold text-rose-400">{product.price.toFixed(2)}€</p>
+                      <p className="text-lg font-bold text-rose-400">{formatPrice(product.price)}</p>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2">

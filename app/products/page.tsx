@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
+import { formatPrice } from '@/app/lib/format';
 
 interface Product {
   id: string;
@@ -361,8 +362,14 @@ export default function ProductsPage() {
                 {/* Image du produit */}
                 <div className="relative h-56 overflow-hidden">
                   <img
-                    src={product.images[0] || '/placeholder.jpg'}
+                    src={product.images?.[0] || '/placeholder.jpg'}
                     alt={product.name}
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      if (target.src !== window.location.origin + '/placeholder.jpg') {
+                        target.src = '/placeholder.jpg';
+                      }
+                    }}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
@@ -401,11 +408,11 @@ export default function ProductsPage() {
                   <div className="mb-6">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold text-rose-400">
-                        {product.price.toFixed(2)}€
+                        {formatPrice(product.price)}
                       </span>
                       {product.originalPrice && (
                         <span className="text-sm text-gray-500 line-through">
-                          {product.originalPrice.toFixed(2)}€
+                          {formatPrice(product.originalPrice)}
                         </span>
                       )}
                     </div>
