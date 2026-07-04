@@ -22,20 +22,31 @@ interface Product {
 }
 
 export default function ProductsDashboardPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  if (!isAdmin) {
-    router.push('/auth/login');
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !isAdmin) {
+      router.push('/auth/login');
+    }
+  }, [authLoading, isAdmin, router]);
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (isAdmin) {
+      fetchProducts();
+    }
+  }, [isAdmin]);
+
+  if (authLoading || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 flex items-center justify-center">
+        <div className="text-white">Chargement...</div>
+      </div>
+    );
+  }
 
   const fetchProducts = async () => {
     try {
