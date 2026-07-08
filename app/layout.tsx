@@ -3,8 +3,6 @@ import { Inter, Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { LanguageProvider } from '@/context/LanguageContext';
 import { SEOHead } from '@/components/SEO';
 
 // Fusion des polices
@@ -103,15 +101,11 @@ export default function RootLayout({
       <body 
         className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <LanguageProvider>
-            <AuthProvider>
-              <CartProvider>
-                {children}
-              </CartProvider>
-            </AuthProvider>
-          </LanguageProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
