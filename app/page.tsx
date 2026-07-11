@@ -151,14 +151,17 @@ const ProductCard3D = ({ product, onAddToCart }: any) => {
 
             {/* BOUTON 3D */}
             <button 
-              onClick={(e) => { e.stopPropagation(); onAddToCart(); }}
-              className="relative w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white py-2.5 sm:py-3 rounded-xl font-bold overflow-hidden group hover:shadow-lg transition-shadow text-sm sm:text-base"
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                window.location.href = `/order?product=${product.id}`;
+              }}
+              className="relative w-full bg-gradient-to-r from-rose-600 to-pink-600 text-white py-2.5 sm:py-3 rounded-xl font-bold overflow-hidden group hover:shadow-lg transition-shadow text-sm sm:text-base"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
-                Ajouter au panier
+                Commander
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-green-700 to-emerald-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-rose-700 to-pink-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
             </button>
 
             {/* INDICATEUR FLIP */}

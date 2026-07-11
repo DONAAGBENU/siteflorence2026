@@ -161,18 +161,19 @@ export const Header = () => {
             </button>
 
             {/* Panier - fusion des deux codes */}
-            <button
-              onClick={toggleCart}
-              className="relative group bg-gradient-to-r from-rose-600 to-pink-600 text-white px-4 py-2 rounded-full font-bold flex items-center gap-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-            >
-              <ShoppingBag className="h-5 w-5" />
-              <span className="hidden md:inline">Panier</span>
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-white text-rose-700 text-sm font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
-                  {totalItems}
-                </span>
-              )}
-            </button>
+            <Link href="/order">
+              <button
+                className="relative group bg-gradient-to-r from-rose-600 to-pink-600 text-white px-4 py-2 rounded-full font-bold flex items-center gap-2 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+              >
+                <ShoppingBag className="h-5 w-5" />
+                <span className="hidden md:inline">Panier</span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-white text-rose-700 text-sm font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+            </Link>
           </div>
 
           {/* Menu mobile - du deuxième code */}

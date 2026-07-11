@@ -21,6 +21,9 @@ export type DashboardOrder = {
   total: number;
   status: DashboardOrderStatus;
   date: string;
+  phone?: string;
+  address?: string;
+  items?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -67,6 +70,9 @@ const buildOrderPayload = (order: Partial<DashboardOrder>) => ({
   total: order.total,
   status: order.status,
   date: order.date,
+  phone: order.phone,
+  address: order.address,
+  items: order.items,
 });
 
 export const getDashboardUsers = async (): Promise<DashboardUser[]> => {
@@ -140,6 +146,42 @@ export const getDashboardOrders = async (): Promise<DashboardOrder[]> => {
     return orders;
   } catch {
     return readLocalStorage<DashboardOrder[]>(STORAGE_KEYS.orders, []);
+  }
+};
+
+export const createDashboardOrder = async (order: Partial<DashboardOrder>): Promise<DashboardOrder> => {
+  const fallback: DashboardOrder = {
+    id: `ORD-${Date.now()}`,
+    customer: order.customer || 'Client Anonyme',
+    total: order.total || 0,
+    status: (order.status as DashboardOrderStatus) || 'En attente',
+    date: order.date || new Date().toISOString().split('T')[0],
+    phone: order.phone || '',
+    address: order.address || '',
+    items: order.items || '',
+  };
+
+  if (!isSupabaseAvailable) {
+    const current = readLocalStorage<DashboardOrder[]>(STORAGE_KEYS.orders, []);
+    const next = [fallback, ...current];
+    writeLocalStorage(STORAGE_KEYS.orders, next);
+    return fallback;
+  }
+
+  try {
+    const { data, error } = await supabase.from('dashboard_orders').insert(buildOrderPayload(order)).select('*').single();
+
+    if (error) throw error;
+    const created = data as DashboardOrder;
+    const current = readLocalStorage<DashboardOrder[]>(STORAGE_KEYS.orders, []);
+    writeLocalStorage(STORAGE_KEYS.orders, [created, ...current]);
+    return created;
+  } catch (err) {
+    console.error('Error creating dashboard order in Supabase:', err);
+    const current = readLocalStorage<DashboardOrder[]>(STORAGE_KEYS.orders, []);
+    const next = [fallback, ...current];
+    writeLocalStorage(STORAGE_KEYS.orders, next);
+    return fallback;
   }
 };
 

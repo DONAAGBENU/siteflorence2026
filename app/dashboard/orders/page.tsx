@@ -3,14 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ShoppingBag, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, CheckCircle2, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { getDashboardOrders, updateDashboardOrderStatus, type DashboardOrder, type DashboardOrderStatus } from '@/lib/dashboard-supabase';
 
 const defaultOrders: DashboardOrder[] = [
-  { id: 'ORD-1001', customer: 'Komi', total: 12500, status: 'En attente', date: '2026-07-10' },
-  { id: 'ORD-1002', customer: 'Afi', total: 28700, status: 'Confirmée', date: '2026-07-09' },
-  { id: 'ORD-1003', customer: 'Mina', total: 6400, status: 'Livrée', date: '2026-07-08' },
+  { id: 'ORD-1001', customer: 'Komi', total: 12500, status: 'En attente', date: '2026-07-10', phone: '+22890123456', address: 'Lomé, Deckon', items: 'Miel Bio Pur (x1)' },
+  { id: 'ORD-1002', customer: 'Afi', total: 28700, status: 'Confirmée', date: '2026-07-09', phone: '+22891234567', address: 'Lomé, Totsi', items: 'Huile de Baobab (x1)' },
+  { id: 'ORD-1003', customer: 'Mina', total: 6400, status: 'Livrée', date: '2026-07-08', phone: '+22892345678', address: 'Lomé, Adidogomé', items: 'Fruits Secs Bio (x1)' },
 ];
 
 export default function OrdersPage() {
@@ -87,29 +87,73 @@ export default function OrdersPage() {
             </select>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {filteredOrders.map((order) => (
-              <div key={order.id} className="flex flex-col gap-3 rounded-xl border border-gray-800 bg-gray-800/60 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="font-semibold text-white">{order.id}</p>
-                  <p className="text-sm text-gray-400">Client : {order.customer}</p>
-                  <p className="text-sm text-gray-400">Date : {order.date}</p>
+              <div key={order.id} className="flex flex-col gap-4 rounded-xl border border-gray-800 bg-gray-800/60 p-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-white text-lg">{order.id}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      order.status === 'En attente' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                      order.status === 'Confirmée' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                      'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-300 font-medium">Client : <span className="text-white">{order.customer}</span></p>
+                    {order.phone && (
+                      <p className="text-sm text-gray-300">Tél : <span className="text-white">{order.phone}</span></p>
+                    )}
+                    {order.address && (
+                      <p className="text-sm text-gray-400">Adresse : <span className="text-gray-300">{order.address}</span></p>
+                    )}
+                    {order.items && (
+                      <p className="text-sm text-gray-400 mt-2 bg-gray-900/50 p-2.5 rounded-lg border border-gray-700/50">
+                        📦 <span className="text-gray-200 font-medium">{order.items}</span>
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 pt-1">Date de commande : {order.date}</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <p className="text-lg font-semibold text-emerald-400">{order.total.toLocaleString('fr-FR')} FCFA</p>
-                  <select
-                    value={order.status}
-                    onChange={(event) => updateStatus(order.id, event.target.value as DashboardOrderStatus)}
-                    className="rounded-xl border border-gray-700 bg-gray-900 px-3 py-2 outline-none"
-                  >
-                    <option value="En attente">En attente</option>
-                    <option value="Confirmée">Confirmée</option>
-                    <option value="Livrée">Livrée</option>
-                  </select>
-                  <button className="rounded-xl bg-emerald-600 px-3 py-2 text-sm flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Valider
-                  </button>
+                
+                <div className="flex flex-col gap-3 items-end justify-between self-stretch">
+                  <p className="text-xl font-bold text-emerald-400">{order.total.toLocaleString('fr-FR')} FCFA</p>
+                  
+                  <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                    {order.phone && (
+                      <a 
+                        href={`https://wa.me/${order.phone.replace(/[^0-9+]/g, '')}?text=Bonjour%20${encodeURIComponent(order.customer)},%20concernant%20votre%20commande%20${order.id}...`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 px-3 py-2 text-sm flex items-center gap-2 text-white font-medium shadow-md shadow-emerald-950/20"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        WhatsApp
+                      </a>
+                    )}
+                    
+                    <select
+                      value={order.status}
+                      onChange={(event) => updateStatus(order.id, event.target.value as DashboardOrderStatus)}
+                      className="rounded-xl border border-gray-700 bg-gray-900 px-3 py-2 text-sm outline-none text-white cursor-pointer"
+                    >
+                      <option value="En attente">En attente</option>
+                      <option value="Confirmée">Confirmée</option>
+                      <option value="Livrée">Livrée</option>
+                    </select>
+
+                    <button 
+                      onClick={() => updateStatus(order.id, 'Confirmée')}
+                      disabled={order.status === 'Confirmée' || order.status === 'Livrée'}
+                      className="rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:hover:bg-rose-600 px-3 py-2 text-sm flex items-center gap-1.5 font-medium transition-colors"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      Valider
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

@@ -430,15 +430,14 @@ export default function ProductsPage() {
                       <Package className="h-4 w-4 mr-2" />
                       Détails
                     </Button>
-                    <Button
-                      className="flex-1 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700"
-                      onClick={() => {
-                        // Ajouter au panier
-                      }}
-                    >
-                      <ShoppingBag className="h-4 w-4 mr-2" />
-                      Ajouter
-                    </Button>
+                    <Link href={`/order?product=${product.id}`} className="flex-1">
+                      <Button
+                        className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700"
+                      >
+                        <ShoppingBag className="h-4 w-4 mr-2" />
+                        Commander
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     checkUser();
-    
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       await checkUser();
     });
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const adminPhone = getCookie('admin_phone');
       const isClient = document.cookie.includes('is_client=1');
       const clientPhone = getCookie('client_phone');
-      
+
       if (isAdmin && adminPhone) {
         const adminUser = adminUsers.find(u => u.phone === adminPhone);
         if (adminUser) {
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
       }
-      
+
       if (isClient && clientPhone) {
         const clientName = getCookie('client_name') || clientPhone;
         setUser({
@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       const cleanPhone = phone.trim();
-      
+
       // Vérifier si c'est un admin
       const adminUser = adminUsers.find(u => u.phone === cleanPhone && u.password === password);
 
@@ -142,10 +142,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.push('/dashboard');
       } else {
         // Client
+        let clientName = cleanPhone;
+        let dbId = `client-${Date.now()}`;
+        
+        // On vérifie s'il existe dans Supabase dashboard_users
+        const { data: existingUser } = await supabase
+          .from('dashboard_users')
+          .select('*')
+          .eq('phone', cleanPhone)
+          .maybeSingle();
+          
+        if (existingUser) {
+          if (existingUser.status === 'Bloqué') {
+            throw new Error('Votre compte a été bloqué par l\'administrateur.');
+          }
+          clientName = existingUser.name;
+          dbId = existingUser.id;
+        } else {
+          // Si l'utilisateur n'existe pas encore dans dashboard_users, on le crée
+          const { data: newUser } = await supabase
+            .from('dashboard_users')
+            .insert({
+              name: cleanPhone,
+              phone: cleanPhone,
+              role: 'client',
+              status: 'Actif'
+            })
+            .select('*')
+            .maybeSingle();
+          if (newUser) {
+            clientName = newUser.name;
+            dbId = newUser.id;
+          }
+        }
+
         const clientUser: User = {
-          id: `client-${Date.now()}`,
+          id: dbId,
           phone: cleanPhone,
-          name: cleanPhone,
+          name: clientName,
           role: 'client',
           createdAt: new Date()
         };
@@ -153,7 +187,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(clientUser);
         setCookie('is_client', '1', 24);
         setCookie('client_phone', encodeURIComponent(cleanPhone), 24);
-        setCookie('client_name', encodeURIComponent(cleanPhone), 24);
+        setCookie('client_name', encodeURIComponent(clientName), 24);
         router.push('/products');
       }
     } catch (error: any) {
@@ -167,16 +201,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       const cleanPhone = phone.trim();
-      
+
       if (!cleanPhone.startsWith('+')) {
         throw new Error('Le numéro doit commencer par + (ex: +228XXXXXXXXX)');
       }
 
+      let dbId = `client-${Date.now()}`;
+      const finalName = name.trim() || cleanPhone;
+
+      // Créer l'utilisateur dans dashboard_users sur Supabase
+      const { data: newUser } = await supabase
+        .from('dashboard_users')
+        .insert({
+          name: finalName,
+          phone: cleanPhone,
+          role: 'client',
+          status: 'Actif'
+        })
+        .select('*')
+        .maybeSingle();
+
+      if (newUser) {
+        dbId = newUser.id;
+      }
+
       // Créer l'utilisateur client
       const clientUser: User = {
-        id: `client-${Date.now()}`,
+        id: dbId,
         phone: cleanPhone,
-        name: name || cleanPhone,
+        name: finalName,
         role: 'client',
         createdAt: new Date()
       };
@@ -184,12 +237,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(clientUser);
       setCookie('is_client', '1', 24);
       setCookie('client_phone', encodeURIComponent(cleanPhone), 24);
-      setCookie('client_name', encodeURIComponent(name || cleanPhone), 24);
+      setCookie('client_name', encodeURIComponent(finalName), 24);
       setCookie('client_password', encodeURIComponent(password), 24);
-      
+
       // Rediriger directement vers /products
       router.push('/products');
-      
+
     } catch (error: any) {
       throw new Error(error.message || 'Erreur d\'inscription');
     } finally {
@@ -201,7 +254,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (data.name && user) {
         setCookie('client_name', encodeURIComponent(data.name), 24);
-        
+
         // Mettre à jour l'état local
         setUser({
           ...user,
@@ -209,11 +262,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           avatar: data.avatar || user.avatar
         });
       }
-      
+
       if (data.password) {
         setCookie('client_password', encodeURIComponent(data.password), 24);
       }
-      
+
       if (data.avatar && user && !data.name) {
         setUser({
           ...user,
@@ -249,7 +302,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const getCookie = (name: string): string | null => {
     if (typeof document === 'undefined') return null;
-    
+
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) {
@@ -279,3 +332,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
