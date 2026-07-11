@@ -1,8 +1,6 @@
 -- ==========================================
 -- SUPABASE SCHEMA INITIALIZATION SCRIPT
 -- ==========================================
--- This script sets up the database tables and storage bucket policies
--- required for Fleur Sucrée / siteflorence2026.
 -- Paste this entire script into your Supabase SQL Editor and run it.
 
 -- ------------------------------------------
@@ -149,3 +147,97 @@ CREATE POLICY "Anon/Authenticated deletes on product-images"
 ON storage.objects FOR DELETE
 TO anon, authenticated
 USING (bucket_id = 'product-images');
+
+-- ------------------------------------------
+-- 5. DASHBOARD TABLES
+-- ------------------------------------------
+CREATE TABLE IF NOT EXISTS public.dashboard_users (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'client')),
+    status TEXT NOT NULL DEFAULT 'Actif' CHECK (status IN ('Actif', 'En attente', 'Bloqué')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.dashboard_orders (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    customer TEXT NOT NULL,
+    total NUMERIC NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'En attente' CHECK (status IN ('En attente', 'Confirmée', 'Livrée')),
+    date TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.dashboard_settings (
+    id TEXT PRIMARY KEY,
+    shop_name TEXT NOT NULL DEFAULT 'Fleur Sucrée',
+    contact_email TEXT NOT NULL DEFAULT 'contact@fleursucree.com',
+    whatsapp TEXT NOT NULL DEFAULT '+22890000000',
+    delivery_time TEXT NOT NULL DEFAULT '24h',
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+INSERT INTO public.dashboard_settings (id, shop_name, contact_email, whatsapp, delivery_time)
+VALUES ('main', 'Fleur Sucrée', 'contact@fleursucree.com', '+22890000000', '24h')
+ON CONFLICT (id) DO NOTHING;
+
+ALTER TABLE public.dashboard_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.dashboard_orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.dashboard_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow read dashboard users" ON public.dashboard_users;
+DROP POLICY IF EXISTS "Allow insert dashboard users" ON public.dashboard_users;
+DROP POLICY IF EXISTS "Allow update dashboard users" ON public.dashboard_users;
+DROP POLICY IF EXISTS "Allow read dashboard orders" ON public.dashboard_orders;
+DROP POLICY IF EXISTS "Allow insert dashboard orders" ON public.dashboard_orders;
+DROP POLICY IF EXISTS "Allow update dashboard orders" ON public.dashboard_orders;
+DROP POLICY IF EXISTS "Allow read dashboard settings" ON public.dashboard_settings;
+DROP POLICY IF EXISTS "Allow upsert dashboard settings" ON public.dashboard_settings;
+
+CREATE POLICY "Allow read dashboard users"
+ON public.dashboard_users FOR SELECT
+USING (true);
+
+CREATE POLICY "Allow insert dashboard users"
+ON public.dashboard_users FOR INSERT
+TO anon, authenticated
+WITH CHECK (true);
+
+CREATE POLICY "Allow update dashboard users"
+ON public.dashboard_users FOR UPDATE
+TO anon, authenticated
+USING (true)
+WITH CHECK (true);
+
+CREATE POLICY "Allow read dashboard orders"
+ON public.dashboard_orders FOR SELECT
+USING (true);
+
+CREATE POLICY "Allow insert dashboard orders"
+ON public.dashboard_orders FOR INSERT
+TO anon, authenticated
+WITH CHECK (true);
+
+CREATE POLICY "Allow update dashboard orders"
+ON public.dashboard_orders FOR UPDATE
+TO anon, authenticated
+USING (true)
+WITH CHECK (true);
+
+CREATE POLICY "Allow read dashboard settings"
+ON public.dashboard_settings FOR SELECT
+USING (true);
+
+CREATE POLICY "Allow upsert dashboard settings"
+ON public.dashboard_settings FOR INSERT
+TO anon, authenticated
+WITH CHECK (true);
+
+CREATE POLICY "Allow update dashboard settings"
+ON public.dashboard_settings FOR UPDATE
+TO anon, authenticated
+USING (true)
+WITH CHECK (true);
