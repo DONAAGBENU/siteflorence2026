@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '@/components/CartContext';
 import { supabase } from '@/lib/supabase';
 import { createDashboardOrder } from '@/lib/dashboard-supabase';
 import { formatPrice } from '@/app/lib/format';
@@ -16,8 +16,46 @@ import { Button } from '@/components/ui/Button';
 
 // Local mock products database to look up by ID
 const localProducts = [
+  // Nouveaux produits Fleur Sucrée
+  {
+    id: 1, 
+    name: 'Huile de Rose Premium',
+    description: 'Huile essentielle de rose précieuse pour une peau éclatante',
+    price: 45499,
+    image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=800&q=80',
+    rating: 4.9, 
+    category: 'signature',
+  },
   {
     id: 2, 
+    name: 'Crème de Vanille',
+    description: 'Crème hydratante à la vanille de Madagascar pour une peau douce',
+    price: 32999,
+    image: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&w=800&q=80',
+    rating: 4.8, 
+    category: 'luxe',
+  },
+  {
+    id: 3, 
+    name: 'Eau de Fleur d\'Oranger',
+    description: 'Eau florale rafraîchissante pour tonifier et apaiser la peau',
+    price: 24999, 
+    image: 'https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?auto=format&fit=crop&w=800&q=80',
+    rating: 4.7, 
+    category: 'signature',
+  },
+  {
+    id: 4, 
+    name: 'Sérum à la Lavande',
+    description: 'Sérum régénérant à la lavande pour une peau revitalisée',
+    price: 38499,
+    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80',
+    rating: 4.9, 
+    category: 'premium',
+  },
+  // Anciens produits Bio
+  {
+    id: 5, 
     name: 'Miel Bio Pur',
     description: 'Miel 100% naturel récolté dans les montagnes africaines',
     price: 32499,
@@ -26,7 +64,7 @@ const localProducts = [
     category: 'signature',
   },
   {
-    id: 4, 
+    id: 6, 
     name: 'Huile de Baobab',
     description: 'Huile végétale précieuse aux propriétés régénérantes exceptionnelles',
     price: 54999,
@@ -35,7 +73,7 @@ const localProducts = [
     category: 'luxe',
   },
   {
-    id: 5, 
+    id: 7, 
     name: 'Café Bio Éthiopie',
     description: 'Café arabica bio torréfié lentement pour un arôme intense',
     price: 18999, 
@@ -44,7 +82,7 @@ const localProducts = [
     category: 'gourmet',
   },
   {
-    id: 6, 
+    id: 8, 
     name: 'Fruits Secs Bio',
     description: 'Mélange premium de fruits secs et noix biologiques',
     price: 21499,

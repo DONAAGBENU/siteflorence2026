@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
-import { CartProvider } from '@/context/CartContext';
+import { CartProvider } from '@/components/CartContext';
 import { SEOHead } from '@/components/SEO';
 
 // Fusion des polices

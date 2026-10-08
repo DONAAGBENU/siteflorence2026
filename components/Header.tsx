@@ -35,7 +35,7 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-40 border-b border-gray-800 bg-gray-900/95 backdrop-blur-xl shadow-xl">
       <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
-        {/* Logo du premier code avec design amélioré du deuxième */}
+        {/* Logo avec design cohérent */}
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-pink-600 rounded-full blur-lg opacity-70 group-hover:opacity-100 transition-opacity"></div>
@@ -45,11 +45,11 @@ export const Header = () => {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
               Fleur Sucrée
             </h1>
-            <p className="text-xs text-gray-400">L&apos;excellence sensorielle</p>
+            <p className="text-xs text-gray-400">Produits Premium</p>
           </div>
         </Link>
 
-        {/* Navigation desktop - du deuxième code */}
+        {/* Navigation desktop */}
         <nav className="hidden lg:flex items-center gap-1">
           {navigation.map((item) => (
             <Link
@@ -147,7 +147,7 @@ export const Header = () => {
               </Link>
               <Link href="/auth/register">
                 <Button className="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700">
-                  Inscription
+                  S'inscrire
                 </Button>
               </Link>
             </div>
@@ -220,7 +220,7 @@ export const Header = () => {
                   className="px-4 py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-lg transition-colors text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Inscription
+                  S'inscrire
                 </Link>
               </>
             )}

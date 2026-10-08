@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Product } from '@/types';
-import { useCart } from '@/components/CartContext';
+import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { ShoppingCart, X } from 'lucide-react';
