@@ -685,19 +685,34 @@ L'administrateur a été informé de cette nouvelle inscription.
             </div>
 
             {[
-              { title: 'Collections', items: ['Signature', 'Édition Limitée', 'Sur Mesure', 'Édition Or'] },
-              { title: 'Services', items: ['Conseils Experts', 'Consultation', 'Ateliers', 'Cadeaux'] },
-              { title: 'Entreprise', items: ['Notre Histoire', 'Carrières', 'Presse', 'Boutiques'] }
+              { title: 'Collections', items: [
+                { name: 'Signature', href: '/products' },
+                { name: 'Édition Limitée', href: '/products' },
+                { name: 'Sur Mesure', href: '/products' },
+                { name: 'Édition Or', href: '/products' }
+              ]},
+              { title: 'Services', items: [
+                { name: 'Conseils Experts', href: '/contact' },
+                { name: 'Consultation', href: '/contact' },
+                { name: 'Ateliers', href: '/experiences' },
+                { name: 'Cadeaux', href: '/products' }
+              ]},
+              { title: 'Entreprise', items: [
+                { name: 'Notre Histoire', href: '/about' },
+                { name: 'Carrières', href: '/contact' },
+                { name: 'Presse', href: '/contact' },
+                { name: 'Boutiques', href: '/contact' }
+              ]}
             ].map((column, idx) => (
               <div key={idx}>
                 <h4 className="text-lg font-bold mb-6 text-white">{column.title}</h4>
                 <ul className="space-y-3">
                   {column.items.map((item, itemIdx) => (
                     <li key={itemIdx}>
-                      <a href="#" className="text-gray-400 hover:text-rose-400 transition-colors flex items-center gap-2">
+                      <Link href={item.href} className="text-gray-400 hover:text-rose-400 transition-colors flex items-center gap-2">
                         <ChevronRight className="h-3 w-3" />
-                        {item}
-                      </a>
+                        {item.name}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -765,6 +780,11 @@ L'administrateur a été informé de cette nouvelle inscription.
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
             <p>&copy; 2025 Fleur Sucrée. Tous droits réservés. L&apos;excellence a un nom.</p>
             <p className="mt-2 text-sm">by DONA</p>
+            <p className="mt-3 text-xs">
+              <a href="mailto:agbagnof@gmail.com" className="text-rose-400 hover:text-rose-300 transition-colors">
+                Contact Admin: agbagnof@gmail.com
+              </a>
+            </p>
           </div>
         </div>
       </footer>
